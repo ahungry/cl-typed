@@ -21,19 +21,11 @@
 (defpackage cl-typed
   (:use :cl :cl-annot)
   (:export :main
+           :!
+           :defn
            :print-usage))
 
 (in-package #:cl-typed)
-
-(defmacro defn (types name args &rest rest)
-  "Type safe defun"
-  (let ((types (remove-if
-                (lambda (x) (or (equal '-> x) (equal '→ x))) types)))
-    `(progn (defun ,name ,args
-              ,@(loop for arg in (cdr args) for type in types
-                     collect `(check-type ,arg ,type))
-              ,@rest)
-            (declaim (ftype (function ,(butlast types) ,@(last types)) ,name)))))
 
 ;; (defn add-reals (real real → real) (a b) (+ a b))
 
@@ -41,13 +33,26 @@
 ;;   `(defn ,types ,(cadr rest) ,@(cddr rest)))
 
 (annot:enable-annot-syntax)
+(setf (annot.core:annotation-inline-p 'annot) t)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defannotation fun (x y)
+  (defmacro defn (types name args &rest rest)
+    "Type safe defun"
+    (let ((types (remove-if
+                  (lambda (x) (or (equal '-> x) (equal '→ x))) types)))
+      `(progn (defun ,name ,args
+                ,@(loop
+                     for arg in args
+                     for type in types
+                     collect `(check-type ,arg ,type))
+                ,@rest)
+              (declaim (ftype (function ,(butlast types) ,@(last types)) ,name)))))
+
+  (defannotation ! (x y)
       (:arity 2 :inline t)
     `(defn ,x ,(cadr y) ,@(cddr y))))
 
-@fun (number number → number)
+@! (number number → number)
 (defun add (a b)
   (print "I will never print, even with invalid inputs at runtime.")
   (+ a b))
@@ -59,8 +64,6 @@
   (+ a b))
 
 (defun broken-call-x () (add-x "x" "y"))
-
-
 
 (defun print-usage ()
   (format t
