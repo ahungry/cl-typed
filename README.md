@@ -1,4 +1,4 @@
-# cl-typed - Strong and Static typing for Common Lisp
+# cl-typed - Strong static typing for Common Lisp
 
 ## Usage
 
