@@ -1,0 +1,48 @@
+LISP?= sbcl
+AF_LIB_TESTY_COLORIZE?= yes
+
+TFLAGS = --non-interactive \
+	--eval '(ql:quickload :cl-typed)' \
+	--eval '(cl-typed.run.tests:main)'
+
+CFLAGS = --disable-debugger \
+	--eval "(mapc \#'require '(sb-bsd-sockets sb-posix sb-introspect sb-cltl2 sb-rotate-byte sb-cover asdf))" \
+	--eval '(sb-ext:save-lisp-and-die "bin/cl-typed.core")'
+
+TEFLAGS = --disable-debugger \
+	--eval '(ql:quickload :cl-typed)' \
+	--eval '(sb-ext:save-lisp-and-die "bin/cl-typed-test" :executable t)'
+
+EFLAGS = --disable-debugger \
+	--eval '(ql:quickload :cl-typed)' \
+	--eval '(sb-ext:save-lisp-and-die "bin/cl-typed" :executable t :toplevel '"\#'cl-typed::main)"
+
+CORE = bin/cl-typed.core
+EXE = bin/cl-typed
+TEXE = bin/cl-typed-test
+
+all: $(EXE)
+
+$(CORE):
+	$(LISP) $(CFLAGS)
+
+$(EXE): $(CORE)
+	$(LISP) --core $< $(EFLAGS)
+
+$(TEXE): $(CORE)
+	$(LISP) --core $< $(TEFLAGS)
+
+test: $(TEXE)
+	AF_LIB_TESTY_COLORIZE=$(AF_LIB_TESTY_COLORIZE) $< $(TFLAGS)
+
+coverage: $(TEXE)
+	AF_LIB_TESTY_COVERAGE='y' \
+	AF_LIB_TESTY_COLORIZE=$(AF_LIB_TESTY_COLORIZE) $< $(TFLAGS)
+
+clean:
+	-rm $(CORE)
+	-rm $(EXE)
+	-rm $(TEXE)
+
+.PHONY:
+	all test

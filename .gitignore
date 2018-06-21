@@ -1,0 +1,13 @@
+#.*#
+*.swp
+*.fasl
+/autom4te.cache/
+/autoscan.log
+/config.log
+/config.status
+/configure
+/Makefile
+/bin/cl-typed
+/bin/cl-typed-test
+/bin/cl-typed.core
+/coverage/
