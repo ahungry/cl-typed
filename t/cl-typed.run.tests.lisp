@@ -69,7 +69,10 @@
           (it "Should throw an error if my types are invalid."
               (handler-case
                   (progn
-                    (mirror-number "four"))
+                    (mirror-number "four")
+                    ;; force a failure incase we don't pop out first
+                    (eq nil t)
+                    )
                 (simple-type-error (e)
                   (eq t t)
                   ))))
