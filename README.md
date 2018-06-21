@@ -23,6 +23,14 @@ Simple math example:
 (defun broken-call-x () (add-x "x" "y")) ;; Will compile with just a warning
 ```
 
+## Testing
+
+Build with `cat build.sh | sh` in the project root.
+
+Then you can use a simple `make test` in the future to test changes.
+
+To run tests in the REPL: `(ql:quickload :cl-typed) (cl-typed.run.tests:main)`
+
 ## TODO
 
 I'll probably look into making a lot of custom types, so a typable collection would

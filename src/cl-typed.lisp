@@ -19,7 +19,7 @@
 (in-package #:cl-user)
 
 (defpackage cl-typed
-  (:use :cl :cl-annot)
+  (:use :cl :cl-annot :cl-typed.lib.stub)
   (:export :main
            :!
            :defn
@@ -27,30 +27,8 @@
 
 (in-package #:cl-typed)
 
-;; (defn add-reals (real real → real) (a b) (+ a b))
-
-;; (defmacro fun (types &rest rest)
-;;   `(defn ,types ,(cadr rest) ,@(cddr rest)))
-
 (annot:enable-annot-syntax)
 (setf (annot.core:annotation-inline-p 'annot) t)
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defmacro defn (types name args &rest rest)
-    "Type safe defun"
-    (let ((types (remove-if
-                  (lambda (x) (or (equal '-> x) (equal '→ x))) types)))
-      `(progn (defun ,name ,args
-                ,@(loop
-                     for arg in args
-                     for type in types
-                     collect `(check-type ,arg ,type))
-                ,@rest)
-              (declaim (ftype (function ,(butlast types) ,@(last types)) ,name)))))
-
-  (defannotation ! (x y)
-      (:arity 2 :inline t)
-    `(defn ,x ,(cadr y) ,@(cddr y))))
 
 @! (number number → number)
 (defun add (a b)

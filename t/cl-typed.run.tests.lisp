@@ -28,6 +28,8 @@
 
 (in-package #:cl-typed.run.tests)
 
+(annot:enable-annot-syntax)
+
 (defparameter *base-directory* (asdf:system-source-directory :cl-typed))
 
 (defun main ()
@@ -37,6 +39,10 @@
       (coverage)
       (test)
       ))
+
+@! (number → number)
+(defun mirror-number (a)
+  a)
 
 (defun test ()
   "Begin the tests!"
@@ -53,6 +59,21 @@
           (it "Should echo the input"
               (eq 3 (cl-typed.lib.stub:echo 3)))
           )
+
+         (desc
+          "Type assertions"
+
+          (it "Should work with valid values"
+              (eq 4 (mirror-number 4)))
+
+          (it "Should throw an error if my types are invalid."
+              (handler-case
+                  (progn
+                    (mirror-number "four"))
+                (simple-type-error (e)
+                  (eq t t)
+                  ))))
+
          ) ;; end suite
         (setf sb-ext:*exit-hooks* (list (lambda () (sb-ext:exit :code 0))))
         (setf sb-ext:*exit-hooks* (list (lambda () (sb-ext:exit :code 1)))))
