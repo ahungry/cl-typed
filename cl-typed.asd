@@ -28,7 +28,8 @@
   :description "Your project template"
   :author "Your Name <cl-typed@example.com>"
   :license "GPLv3"
-  :depends-on (#:ahungry-fleece)
+  :depends-on (#:ahungry-fleece
+               #:cl-annot)
   :serial t
   :components
   (

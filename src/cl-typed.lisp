@@ -19,22 +19,59 @@
 (in-package #:cl-user)
 
 (defpackage cl-typed
-  (:use :cl)
+  (:use :cl :cl-annot)
   (:export :main
            :print-usage))
 
 (in-package #:cl-typed)
 
+(defmacro defn (types name args &rest rest)
+  "Type safe defun"
+  (let ((types (remove-if
+                (lambda (x) (or (equal '-> x) (equal '→ x))) types)))
+    `(progn (defun ,name ,args
+              ,@(loop for arg in (cdr args) for type in types
+                     collect `(check-type ,arg ,type))
+              ,@rest)
+            (declaim (ftype (function ,(butlast types) ,@(last types)) ,name)))))
+
+;; (defn add-reals (real real → real) (a b) (+ a b))
+
+;; (defmacro fun (types &rest rest)
+;;   `(defn ,types ,(cadr rest) ,@(cddr rest)))
+
+(annot:enable-annot-syntax)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defannotation fun (x y)
+      (:arity 2 :inline t)
+    `(defn ,x ,(cadr y) ,@(cddr y))))
+
+@fun (number number → number)
+(defun add (a b)
+  (print "I will never print, even with invalid inputs at runtime.")
+  (+ a b))
+
+(defun broken-call () (add "x" "y"))
+
+(defun add-x (a b)
+  (print "I will happily print, even with invalid inputs at runtime.")
+  (+ a b))
+
+(defun broken-call-x () (add-x "x" "y"))
+
+
+
 (defun print-usage ()
   (format t
-   "cl-typed v/~a.
+          "cl-typed v/~a.
 
 Usage:
 
     $ cl-typed [-h, --help] # Print this help
 
 "
-   (asdf:component-version (asdf:find-system :cl-typed))))
+          (asdf:component-version (asdf:find-system :cl-typed))))
 
 (defun main (&rest argv)
   (unless argv
